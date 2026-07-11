@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#12151b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="מתיחה">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>מתיחה | תוכנית כוח בגומיות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12151b;
+    --surface:#1b212b;
+    --surface2:#232b36;
+    --surface3:#2b3542;
+    --text:#f2eee4;
+    --text-dim:#98a2b0;
+    --text-dim2:#6b7684;
+    --line:#2e3844;
+    --light:#f4d35e;
+    --light-ink:#3a2f0d;
+    --medium:#ef8354;
+    --medium-ink:#3a1f10;
+    --heavy:#8b7cf0;
+    --heavy-ink:#241c40;
+    --good:#8fd694;
+    --radius:18px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, #1a2230 0%, transparent 45%),
+      radial-gradient(circle at 90% 10%, #201a2c 0%, transparent 40%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Assistant', sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:520px; margin:0 auto; padding:20px 16px 40px;}
+
+  /* header */
+  header{padding:8px 4px 20px; text-align:center; position:relative;}
+  .eyebrow{
+    font-size:12px; letter-spacing:.12em; color:var(--text-dim2);
+    text-transform:uppercase; margin-bottom:6px; font-weight:600;
+  }
+  h1{
+    font-family:'Secular One', sans-serif;
+    font-size:34px; margin:0 0 6px; font-weight:400;
+    background:linear-gradient(90deg,#fff,#c7cede);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sub{color:var(--text-dim); font-size:14.5px; line-height:1.5; margin:0 auto; max-width:380px;}
+
+  /* band signature strip */
+  .band-strip{
+    display:flex; align-items:center; justify-content:center; gap:6px; margin-top:16px;
+  }
+  .band-dash{height:5px; width:26px; border-radius:3px; opacity:.85;}
+
+  /* day tabs */
+  .tabs{display:flex; gap:8px; margin:22px 0 6px;}
+  .tab{
+    flex:1; background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:12px 6px; text-align:center; cursor:pointer;
+    transition:.2s; position:relative; overflow:hidden;
+  }
+  .tab .tab-letter{
+    font-family:'Secular One'; font-size:20px; display:block;
+  }
+  .tab .tab-name{font-size:11.5px; color:var(--text-dim); display:block; margin-top:2px;}
+  .tab.active{
+    background:var(--surface3); border-color:var(--surface3);
+    box-shadow:0 4px 18px -6px rgba(0,0,0,.6);
+  }
+  .tab .tab-progress{
+    position:absolute; bottom:0; right:0; left:0; height:3px;
+    background:var(--line);
+  }
+  .tab .tab-progress-fill{height:100%; background:var(--good); transition:width .3s;}
+
+  .day-blurb{color:var(--text-dim); font-size:13px; text-align:center; margin:14px 0 18px;}
+
+  /* exercise cards */
+  .ex-list{display:flex; flex-direction:column; gap:10px;}
+  .ex-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; transition:border-color .2s;
+  }
+  .ex-card.open{border-color:var(--surface3);}
+  .ex-card.done{opacity:.6;}
+  .ex-head{
+    display:flex; align-items:center; gap:12px; padding:14px 14px; cursor:pointer;
+  }
+  .ex-num{
+    width:30px; height:30px; border-radius:50%; background:var(--surface2);
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+    color:var(--text-dim); flex-shrink:0; font-weight:600;
+  }
+  .ex-card.done .ex-num{background:var(--good); color:#0d2a10;}
+  .ex-titles{flex:1; min-width:0;}
+  .ex-name{font-size:15.5px; font-weight:700; margin:0 0 3px;}
+  .ex-meta{display:flex; gap:8px; align-items:center; font-size:12px; color:var(--text-dim);}
+  .tier-chip{
+    display:inline-flex; align-items:center; gap:5px; padding:2px 8px 2px 6px;
+    border-radius:20px; font-size:11px; font-weight:700;
+  }
+  .tier-dot{width:8px; height:8px; border-radius:50%;}
+  .chev{color:var(--text-dim2); transition:transform .25s; flex-shrink:0;}
+  .ex-card.open .chev{transform:rotate(180deg);}
+
+  .ex-body{
+    max-height:0; overflow:hidden; transition:max-height .3s ease;
+  }
+  .ex-card.open .ex-body{max-height:600px;}
+  .ex-body-inner{padding:0 14px 16px;}
+
+  .demo-stage{
+    background:var(--surface2); border-radius:14px; height:150px;
+    display:flex; align-items:center; justify-content:center; margin-bottom:12px;
+    position:relative; overflow:hidden;
+  }
+  .instructions{
+    font-size:14px; line-height:1.7; color:#dcdfe6; margin:0 0 14px;
+  }
+  .btn-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .btn{
+    border:none; border-radius:12px; padding:10px 14px; font-family:inherit;
+    font-size:13.5px; font-weight:700; cursor:pointer; display:flex;
+    align-items:center; gap:6px; transition:.15s; color:var(--text);
+    background:var(--surface3);
+  }
+  .btn:active{transform:scale(.96);}
+  .btn.primary{background:var(--text); color:var(--ink);}
+  .btn.speaking{background:var(--good); color:#0d2a10;}
+  .btn.done-btn{background:transparent; border:1.5px solid var(--line); color:var(--text-dim);}
+  .btn.done-btn.active{background:var(--good); color:#0d2a10; border-color:var(--good);}
+
+  .rest-panel{
+    margin-top:12px; padding:12px; background:var(--surface2); border-radius:12px;
+    display:none; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .rest-panel.show{display:flex;}
+  .rest-time{font-family:'Secular One'; font-size:26px;}
+  .rest-bar-track{flex:1; height:6px; background:var(--line); border-radius:4px; margin:0 12px; overflow:hidden;}
+  .rest-bar-fill{height:100%; background:var(--medium); width:100%; transition:width 1s linear;}
+
+  footer{text-align:center; color:var(--text-dim2); font-size:12px; margin-top:30px; line-height:1.7;}
+  footer a{color:var(--text-dim);}
+
+  /* SVG figure animations */
+  .fig{width:130px; height:120px;}
+  .fig-part{stroke:#c9d0dc; stroke-width:5; fill:none; stroke-linecap:round;}
+  .fig-head{fill:#c9d0dc;}
+  .band-line{stroke-width:3; fill:none; stroke-linecap:round; stroke-dasharray:3 5;}
+
+  @keyframes pressH{
+    0%,100%{ transform: translateX(0); }
+    50%{ transform: translateX(-16px); }
+  }
+  @keyframes pressV{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-18px); }
+  }
+  @keyframes rowMove{
+    0%,100%{ transform: translateX(0); }
+    50%{ transform: translateX(14px); }
+  }
+  @keyframes raiseMove{
+    0%,100%{ transform: rotate(0deg); }
+    50%{ transform: rotate(-35deg); }
+  }
+  @keyframes squatMove{
+    0%,100%{ transform: translateY(0) scaleY(1); }
+    50%{ transform: translateY(10px) scaleY(.9); }
+  }
+  @keyframes floorMove{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-6px); }
+  }
+  @keyframes bandStretch{
+    0%,100%{ stroke-dashoffset:0; opacity:.55; }
+    50%{ opacity:1; stroke-dashoffset:10; }
+  }
+
+  .anim-target{transform-origin:center; animation-duration:1.6s; animation-iteration-count:infinite; animation-timing-function:ease-in-out;}
+  .type-press-h .anim-target{animation-name:pressH;}
+  .type-press-v .anim-target{animation-name:pressV;}
+  .type-row .anim-target{animation-name:rowMove;}
+  .type-raise .anim-target{animation-name:raiseMove; transform-box:fill-box; transform-origin:right center;}
+  .type-squat .anim-target{animation-name:squatMove;}
+  .type-floor .anim-target{animation-name:floorMove;}
+  .fig .band{animation:bandStretch 1.6s ease-in-out infinite;}
+
+  @media (prefers-reduced-motion: reduce){
+    .anim-target, .fig .band{animation:none !important;}
+  }
+
+  .settings-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:12px 14px; margin-bottom:16px; font-size:13px; color:var(--text-dim);
+  }
+
+  /* video + edit additions */
+  .demo-stage{ flex-direction:column; gap:8px; }
+  .demo-stage video{ width:100%; height:100%; object-fit:cover; border-radius:14px; }
+  .video-upload-empty{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    color:var(--text-dim2); font-size:12.5px; cursor:pointer; padding:10px;
+  }
+  .video-upload-empty svg{opacity:.6;}
+  .stage-toggle{
+    position:absolute; top:8px; left:8px; display:flex; gap:6px; z-index:2;
+  }
+  .stage-toggle button{
+    background:rgba(18,21,27,.75); border:1px solid var(--line); color:var(--text-dim);
+    font-size:11px; padding:4px 9px; border-radius:20px; cursor:pointer; font-family:inherit;
+  }
+  .stage-toggle button.active{background:var(--text); color:var(--ink); border-color:var(--text);}
+  .video-badge{
+    position:absolute; top:8px; right:8px; background:var(--good); color:#0d2a10;
+    font-size:10.5px; font-weight:800; padding:3px 8px; border-radius:20px; z-index:2;
+  }
+  .replace-video-btn{
+    position:absolute; bottom:8px; left:8px; font-size:11px; background:rgba(18,21,27,.75);
+    border:1px solid var(--line); color:var(--text-dim); padding:4px 9px; border-radius:20px;
+    cursor:pointer; font-family:inherit; z-index:2;
+  }
+  input[type=file]{display:none;}
+
+  .instructions-edit{
+    width:100%; background:var(--surface2); border:1px solid var(--line); border-radius:12px;
+    color:var(--text); font-family:inherit; font-size:14px; line-height:1.7; padding:10px 12px;
+    resize:vertical; min-height:90px; margin-bottom:10px;
+  }
+  .edit-row{display:flex; gap:8px; margin-bottom:10px;}
+  .custom-flag{
+    display:inline-block; font-size:10.5px; color:var(--good); margin-inline-start:6px;
+    font-weight:700;
+  }
+  .switch{
+    width:42px; height:24px; background:var(--surface3); border-radius:20px;
+    position:relative; cursor:pointer; flex-shrink:0;
+  }
+  .switch.on{background:var(--good);}
+  .switch::after{
+    content:''; position:absolute; top:3px; right:3px; width:18px; height:18px;
+    background:#fff; border-radius:50%; transition:.2s;
+  }
+  .switch.on::after{transform:translateX(-18px);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">תוכנית אימונים אישית</div>
+    <h1>מתיחה</h1>
+    <p class="sub">כוח בגומיות · חיטוב פלג גוף עליון · 3 אימונים בשבוע · כ-45 דק' לאימון</p>
+    <div class="band-strip">
+      <div class="band-dash" style="background:var(--light)"></div>
+      <div class="band-dash" style="background:var(--medium)"></div>
+      <div class="band-dash" style="background:var(--heavy)"></div>
+    </div>
+  </header>
+
+  <div class="settings-row">
+    <span>הקראה אוטומטית בפתיחת תרגיל</span>
+    <div class="switch" id="autoSpeakSwitch"></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="day-blurb" id="dayBlurb"></div>
+  <div class="ex-list" id="exList"></div>
+
+  <footer id="footerNote">הסרטונים נשמרים מקומית בזיכרון הדפדפן בטלפון שלך ונשארים גם אחרי סגירה. אם תנקה נתוני גלישה/מטמון של הדפדפן, הם יימחקו.</footer>
+</div>
+
+<script>
+const DAYS = {
+  A: {
+    name: "חזה · כתפיים · טריצפס",
+    blurb: "יום A — דגש לחיצות ודחיפה. חמם 5 דק׳ לפני שמתחילים.",
+    exercises: [
+      {name:"לחיצת חזה בגומייה", tier:"medium", type:"press-h", sets:"3", reps:"12–15",
+        instr:"עגן את הגומייה מאחור בגובה החזה. עמוד יציב, רגל אחת קדימה. דחוף את הידיים קדימה עד יישור מלא של המרפקים, בלי לנעול אותם לגמרי. חזור לאחור באיטיות תוך שמירה על מתח בגומייה."},
+      {name:"לחיצת כתפיים מעל הראש", tier:"medium", type:"press-v", sets:"3", reps:"12",
+        instr:"עמוד על הגומייה בשתי הרגליים ברוחב הכתפיים. דחוף את הידיים מעלה עד יישור מעל הראש, בלי לקמר את הגב היתר. הורד באיטיות עד גובה הכתפיים."},
+      {name:"הרחקות צד (Lateral Raise)", tier:"light", type:"raise", sets:"3", reps:"15",
+        instr:"עמוד על הגומייה, ידית בכל יד לצד הגוף. הרם את הידיים הצדה עד גובה הכתפיים, מרפקים כמעט ישרים. עצור רגע למעלה והורד באיטיות."},
+      {name:"פשיטת מרפק מעל הראש (טריצפס)", tier:"light", type:"press-v", sets:"3", reps:"15",
+        instr:"עגן את הגומייה מעל הראש. החזק את הידית בשתי ידיים מאחורי הראש, מרפקים כפופים. פשוט את המרפקים כלפי מעלה עד יישור, ואז חזור באיטיות."},
+      {name:"Pull-Apart (פתיחת חזה)", tier:"light", type:"row", sets:"2", reps:"15",
+        instr:"אחוז בגומייה בשתי ידיים לפניך בגובה החזה, זרועות ישרות. פתח את הידיים הצדה תוך כיווץ השכמות, ואז חזור באיטיות למרכז."},
+      {name:"פלאנק", tier:"bodyweight", type:"floor", sets:"3", reps:"30 שנ'",
+        instr:"שכב על הבטן והתרומם על האמות ואצבעות הרגליים. שמור על קו ישר מהראש עד העקבים, בטן מכווצת, נשימה סדירה."},
+    ]
+  },
+  B: {
+    name: "גב · ביצפס · ליבה",
+    blurb: "יום B — דגש משיכות ואיזון גב-כתפיים.",
+    exercises: [
+      {name:"חתירה בגומייה (Bent-Over Row)", tier:"heavy", type:"row", sets:"3", reps:"15",
+        instr:"עמוד על הגומייה, רגליים ברוחב האגן, גב ישר ונטייה קלה קדימה. משוך את הידיות לכיוון הבטן תוך כיווץ השכמות, ואז שחרר באיטיות."},
+      {name:"משיכה אנכית (Lat Pulldown)", tier:"medium", type:"press-v", sets:"3", reps:"12",
+        instr:"עגן את הגומייה גבוה מעל הראש. אחוז בידית בשתי ידיים ומשוך כלפי מטה לכיוון החזה, מרפקים לצדדים. חזור באיטיות למעלה."},
+      {name:"כפיפת מרפקים (ביצפס)", tier:"medium", type:"press-h", sets:"3", reps:"15",
+        instr:"עמוד על הגומייה, ידית בכל יד, מרפקים צמודים לגוף. כופף את המרפקים כלפי מעלה עד לכתפיים, ואז הורד באיטיות."},
+      {name:"Face Pull", tier:"light", type:"row", sets:"3", reps:"15",
+        instr:"עגן את הגומייה בגובה הפנים. משוך את הידית לכיוון הפנים כשהמרפקים גבוהים לצדדים, תוך כיווץ השכמות. שחרר באיטיות."},
+      {name:"Superman (הרחבת גב)", tier:"bodyweight", type:"floor", sets:"3", reps:"15",
+        instr:"שכב על הבטן, ידיים מושטות קדימה. הרם בו-זמנית ידיים, חזה ורגליים מהרצפה, החזק שנייה ורד באיטיות."},
+      {name:"ליבה — Bird-Dog", tier:"bodyweight", type:"floor", sets:"3", reps:"10 לכל צד",
+        instr:"עמדה על ארבע. הושט יד אחת קדימה ורגל נגדית אחורה בו-זמנית, שמור על גב יציב. חזור למרכז והחלף צד."},
+    ]
+  },
+  C: {
+    name: "עליון משולב · תחתון קל",
+    blurb: "יום C — שילוב עליון מלא עם תוספת רגליים.",
+    exercises: [
+      {name:"Arnold Press", tier:"medium", type:"press-v", sets:"3", reps:"12",
+        instr:"עמוד על הגומייה, ידיות מול החזה כפות ידיים פנימה. תוך כדי דחיפה מעלה, סובב את כפות הידיים החוצה עד יישור מעל הראש. חזור באיטיות תוך סיבוב הפוך."},
+      {name:"חתירה + כפיפת מרפק (סופרסט)", tier:"medium", type:"row", sets:"3", reps:"15",
+        instr:"בצע חתירה מלאה, ובסיום התנועה הוסף כפיפת מרפקים לביצפס לפני שחוזרים לנקודת ההתחלה. תנועה רציפה אחת."},
+      {name:"טריצפס Kickback", tier:"light", type:"row", sets:"3", reps:"15",
+        instr:"רכן קדימה מעט, מרפק צמוד לגוף וכפוף בזווית 90 מעלות. פשוט את הזרוע אחורה עד יישור, ואז חזור באיטיות."},
+      {name:"הרחקות צד + קדימה", tier:"light", type:"raise", sets:"3", reps:"12",
+        instr:"שלב הרמת ידיים לצדדים והרמה קדימה לסירוגין, בגובה הכתפיים בכל פעם. שמור על מרפקים כמעט ישרים לאורך כל הטווח."},
+      {name:"גשר ישבן עם גומייה", tier:"medium", type:"squat", sets:"3", reps:"15",
+        instr:"שכב על הגב, ברכיים כפופות, גומייה סביב הברכיים. הרם את האגן כלפי מעלה תוך לחיצת הברכיים החוצה נגד הגומייה. הורד באיטיות."},
+      {name:"סקוואט עם גומייה", tier:"heavy", type:"squat", sets:"3", reps:"15",
+        instr:"עמוד על הגומייה, ידיות בגובה הכתפיים. רד לסקוואט עד ירכיים מקבילות לרצפה, ואז דחוף דרך העקבים חזרה למעלה."},
+    ]
+  }
+};
+
+const TIER_LABEL = {light:"קלה", medium:"בינונית", heavy:"כבדה", bodyweight:"משקל גוף"};
+const TIER_VAR = {light:"var(--light)", medium:"var(--medium)", heavy:"var(--heavy)", bodyweight:"var(--text-dim2)"};
+
+let currentDay = "A";
+let autoSpeak = false;
+let progress = {}; // {A:[true,false,...], B:..., C:...}
+let restTimers = {}; // per exercise index interval id
+let videoUrls = {};   // in-memory only, e.g. "A-2": objectURL — lost on reload
+let stageMode = {};   // "A-2": "video" | "demo"
+let customInstr = {}; // "A-2": "custom text" — persisted via window.storage
+
+function keyOf(day,i){ return `${day}-${i}`; }
+
+/* ---------- IndexedDB video storage (persists on this device) ---------- */
+const IDB_NAME = 'metiha-videos';
+const IDB_STORE = 'videos';
+let idbPromise = null;
+function openVideoDB(){
+  if(idbPromise) return idbPromise;
+  idbPromise = new Promise((resolve, reject)=>{
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = ()=>{ req.result.createObjectStore(IDB_STORE); };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+  return idbPromise;
+}
+async function idbSaveVideo(key, blob){
+  const db = await openVideoDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(blob, key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function idbGetVideo(key){
+  const db = await openVideoDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = ()=> resolve(req.result || null);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbGetAllKeys(){
+  const db = await openVideoDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).getAllKeys();
+    req.onsuccess = ()=> resolve(req.result || []);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbDeleteVideo(key){
+  const db = await openVideoDB();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).delete(key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+
+function getInstr(day,i){
+  const k = keyOf(day,i);
+  return customInstr[k] !== undefined ? customInstr[k] : DAYS[day].exercises[i].instr;
+}
+function hasCustomInstr(day,i){
+  return customInstr[keyOf(day,i)] !== undefined;
+}
+
+function stageContent(day, i, ex){
+  const k = keyOf(day,i);
+  const hasVideo = !!videoUrls[k];
+  const mode = stageMode[k] || (hasVideo ? 'video' : 'demo');
+  let inner;
+  if(mode === 'video' && hasVideo){
+    inner = `<video src="${videoUrls[k]}" controls playsinline></video><span class="video-badge">הסרטון שלך</span>`;
+  } else if(!hasVideo){
+    inner = `<div class="video-upload-empty" onclick="event.stopPropagation(); document.getElementById('file-${day}-${i}').click()">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>העלה סרטון הדגמה</span>
+    </div>`;
+  } else {
+    inner = figSvg(ex.type);
+  }
+  const toggle = hasVideo ? `
+    <div class="stage-toggle">
+      <button class="${mode==='video'?'active':''}" onclick="event.stopPropagation(); setStageMode('${day}',${i},'video')">סרטון</button>
+      <button class="${mode==='demo'?'active':''}" onclick="event.stopPropagation(); setStageMode('${day}',${i},'demo')">איור</button>
+    </div>
+    <button class="replace-video-btn" onclick="event.stopPropagation(); document.getElementById('file-${day}-${i}').click()">החלף</button>
+    <button class="replace-video-btn" style="left:auto; right:8px; bottom:8px; top:auto;" onclick="event.stopPropagation(); deleteVideo('${day}',${i})">מחק</button>
+  ` : '';
+  return toggle + inner;
+}
+
+function setStageMode(day, i, mode){
+  stageMode[keyOf(day,i)] = mode;
+  const stage = document.getElementById(`stage-${day}-${i}`);
+  if(stage) stage.innerHTML = stageContent(day, i, DAYS[day].exercises[i]);
+}
+
+function handleVideoUpload(evt, day, i){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const k = keyOf(day,i);
+  if(videoUrls[k]) URL.revokeObjectURL(videoUrls[k]);
+  videoUrls[k] = URL.createObjectURL(file);
+  stageMode[k] = 'video';
+  const stage = document.getElementById(`stage-${day}-${i}`);
+  if(stage) stage.innerHTML = stageContent(day, i, DAYS[day].exercises[i]);
+  // persist to IndexedDB so it survives closing the app
+  idbSaveVideo(k, file).catch(()=>{ /* storage full or unavailable */ });
+}
+
+async function loadVideosFromIDB(){
+  try{
+    const keys = await idbGetAllKeys();
+    for(const k of keys){
+      const blob = await idbGetVideo(k);
+      if(blob) videoUrls[k] = URL.createObjectURL(blob);
+    }
+  }catch(e){ /* IndexedDB unavailable in this environment */ }
+}
+
+async function deleteVideo(day, i){
+  const k = keyOf(day,i);
+  if(videoUrls[k]) URL.revokeObjectURL(videoUrls[k]);
+  delete videoUrls[k];
+  delete stageMode[k];
+  await idbDeleteVideo(k).catch(()=>{});
+  const stage = document.getElementById(`stage-${day}-${i}`);
+  if(stage) stage.innerHTML = stageContent(day, i, DAYS[day].exercises[i]);
+}
+
+function startEditInstr(day, i){
+  document.getElementById(`instr-view-${day}-${i}`).style.display = 'none';
+  document.getElementById(`instr-edit-${day}-${i}`).style.display = 'block';
+}
+function cancelEditInstr(day, i){
+  document.getElementById(`instr-edit-${day}-${i}`).style.display = 'none';
+  document.getElementById(`instr-view-${day}-${i}`).style.display = 'block';
+}
+async function saveInstr(day, i){
+  const val = document.getElementById(`textarea-${day}-${i}`).value.trim();
+  const k = keyOf(day,i);
+  if(val && val !== DAYS[day].exercises[i].instr){
+    customInstr[k] = val;
+  } else {
+    delete customInstr[k];
+  }
+  await saveCustomInstr();
+  const card = document.getElementById(`card-${day}-${i}`);
+  render();
+  if(card) document.getElementById(`card-${day}-${i}`).classList.add('open');
+}
+async function resetInstr(day, i){
+  delete customInstr[keyOf(day,i)];
+  await saveCustomInstr();
+  render();
+  document.getElementById(`card-${day}-${i}`).classList.add('open');
+}
+
+function tierChip(tier){
+  const color = TIER_VAR[tier];
+  return `<span class="tier-chip" style="background:${color}22; color:${color}">
+    <span class="tier-dot" style="background:${color}"></span>${TIER_LABEL[tier]}</span>`;
+}
+
+function figSvg(type){
+  // simple schematic figure + elastic band, animated per type class
+  return `
+  <svg class="fig type-${type}" viewBox="0 0 130 120">
+    <circle class="fig-head" cx="65" cy="18" r="10"/>
+    <line class="fig-part" x1="65" y1="28" x2="65" y2="68"/>
+    <line class="fig-part" x1="65" y1="68" x2="52" y2="105"/>
+    <line class="fig-part" x1="65" y1="68" x2="78" y2="105"/>
+    <g class="anim-target">
+      <line class="fig-part" x1="65" y1="40" x2="40" y2="55"/>
+      <line class="fig-part" x1="65" y1="40" x2="90" y2="55"/>
+    </g>
+    <path class="band band-line" d="M20,95 Q35,70 55,95 Q75,120 95,95 Q108,80 118,95" stroke="#8b95a5"/>
+  </svg>`;
+}
+
+function render(){
+  renderTabs();
+  const day = DAYS[currentDay];
+  document.getElementById('dayBlurb').textContent = day.blurb;
+  const list = document.getElementById('exList');
+  list.innerHTML = '';
+  if(!progress[currentDay]) progress[currentDay] = day.exercises.map(()=>false);
+
+  day.exercises.forEach((ex, i)=>{
+    const done = progress[currentDay][i];
+    const card = document.createElement('div');
+    card.className = 'ex-card' + (done ? ' done':'');
+    card.id = `card-${currentDay}-${i}`;
+    card.innerHTML = `
+      <div class="ex-head" onclick="toggleCard('${currentDay}',${i})">
+        <div class="ex-num">${done ? '✓' : i+1}</div>
+        <div class="ex-titles">
+          <p class="ex-name">${ex.name}</p>
+          <div class="ex-meta">${tierChip(ex.tier)}<span>${ex.sets} × ${ex.reps}</span></div>
+        </div>
+        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="ex-body">
+        <div class="ex-body-inner">
+          <div class="demo-stage" id="stage-${currentDay}-${i}">${stageContent(currentDay, i, ex)}</div>
+          <input type="file" accept="video/*" id="file-${currentDay}-${i}" onclick="event.stopPropagation()" onchange="handleVideoUpload(event,'${currentDay}',${i})">
+          <div id="instr-view-${currentDay}-${i}">
+            <p class="instructions">${getInstr(currentDay,i)}${hasCustomInstr(currentDay,i) ? '<span class="custom-flag">✎ ערוך אישית</span>' : ''}</p>
+          </div>
+          <div id="instr-edit-${currentDay}-${i}" style="display:none;">
+            <textarea class="instructions-edit" id="textarea-${currentDay}-${i}">${getInstr(currentDay,i)}</textarea>
+            <div class="edit-row">
+              <button class="btn primary" onclick="event.stopPropagation(); saveInstr('${currentDay}',${i})">שמור</button>
+              <button class="btn" onclick="event.stopPropagation(); cancelEditInstr('${currentDay}',${i})">בטל</button>
+              ${hasCustomInstr(currentDay,i) ? `<button class="btn" onclick="event.stopPropagation(); resetInstr('${currentDay}',${i})">שחזר מקור</button>` : ''}
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn primary" onclick="event.stopPropagation(); speak('${currentDay}',${i})" id="speak-${currentDay}-${i}">🔊 הקרא הנחיות</button>
+            <button class="btn" onclick="event.stopPropagation(); startRest('${currentDay}',${i})">⏱ התחל מנוחה</button>
+            <button class="btn" onclick="event.stopPropagation(); startEditInstr('${currentDay}',${i})" id="editbtn-${currentDay}-${i}">✎ ערוך הנחיות</button>
+            <button class="btn done-btn ${done?'active':''}" onclick="event.stopPropagation(); toggleDone('${currentDay}',${i})" id="done-${currentDay}-${i}">${done? '✓ בוצע' : 'סמן כבוצע'}</button>
+          </div>
+          <div class="rest-panel" id="rest-${currentDay}-${i}">
+            <div class="rest-time" id="resttime-${currentDay}-${i}">40</div>
+            <div class="rest-bar-track"><div class="rest-bar-fill" id="restbar-${currentDay}-${i}"></div></div>
+            <button class="btn" onclick="event.stopPropagation(); stopRest('${currentDay}',${i})">עצור</button>
+          </div>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+  saveProgress();
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  Object.keys(DAYS).forEach(key=>{
+    const day = DAYS[key];
+    const p = progress[key] || day.exercises.map(()=>false);
+    const pct = Math.round((p.filter(Boolean).length / day.exercises.length) * 100);
+    const el = document.createElement('div');
+    el.className = 'tab' + (key===currentDay ? ' active':'');
+    el.onclick = ()=>{ currentDay = key; render(); };
+    el.innerHTML = `
+      <span class="tab-letter">${key}</span>
+      <span class="tab-name">${day.name.split(' · ')[0]}</span>
+      <div class="tab-progress"><div class="tab-progress-fill" style="width:${pct}%"></div></div>
+    `;
+    tabs.appendChild(el);
+  });
+}
+
+function toggleCard(day, i){
+  const card = document.getElementById(`card-${day}-${i}`);
+  const wasOpen = card.classList.contains('open');
+  // close all others
+  document.querySelectorAll('.ex-card.open').forEach(c=> c!==card && c.classList.remove('open'));
+  card.classList.toggle('open');
+  if(!wasOpen && autoSpeak){
+    setTimeout(()=> speak(day, i), 250);
+  } else if(wasOpen){
+    window.speechSynthesis.cancel();
+  }
+}
+
+function toggleDone(day, i){
+  if(!progress[day]) progress[day] = DAYS[day].exercises.map(()=>false);
+  progress[day][i] = !progress[day][i];
+  render();
+  // reopen the card after re-render
+  const card = document.getElementById(`card-${day}-${i}`);
+  if(card) card.classList.add('open');
+}
+
+let currentUtterance = null;
+function speak(day, i){
+  const ex = DAYS[day].exercises[i];
+  const btn = document.getElementById(`speak-${day}-${i}`);
+  window.speechSynthesis.cancel();
+  document.querySelectorAll('.btn.speaking').forEach(b=>{ b.classList.remove('speaking'); b.textContent='🔊 הקרא הנחיות'; });
+  const utter = new SpeechSynthesisUtterance(`${ex.name}. ${getInstr(day,i)}`);
+  utter.lang = 'he-IL';
+  utter.rate = 0.95;
+  const voices = window.speechSynthesis.getVoices();
+  const heVoice = voices.find(v=> v.lang && v.lang.toLowerCase().startsWith('he'));
+  if(heVoice) utter.voice = heVoice;
+  utter.onstart = ()=>{ if(btn){ btn.classList.add('speaking'); btn.textContent='🔈 מקריא...'; } };
+  utter.onend = ()=>{ if(btn){ btn.classList.remove('speaking'); btn.textContent='🔊 הקרא הנחיות'; } };
+  utter.onerror = ()=>{ if(btn){ btn.classList.remove('speaking'); btn.textContent='🔊 הקרא הנחיות'; } };
+  window.speechSynthesis.speak(utter);
+}
+
+function startRest(day, i){
+  const key = `${day}-${i}`;
+  if(restTimers[key]) return;
+  const panel = document.getElementById(`rest-${day}-${i}`);
+  const timeEl = document.getElementById(`resttime-${day}-${i}`);
+  const barEl = document.getElementById(`restbar-${day}-${i}`);
+  panel.classList.add('show');
+  let total = 40;
+  let remaining = total;
+  timeEl.textContent = remaining;
+  barEl.style.width = '100%';
+  restTimers[key] = setInterval(()=>{
+    remaining--;
+    if(remaining < 0){
+      stopRest(day, i);
+      if(navigator.vibrate) navigator.vibrate(200);
+      return;
+    }
+    timeEl.textContent = remaining;
+    barEl.style.width = `${(remaining/total)*100}%`;
+  }, 1000);
+}
+
+function stopRest(day, i){
+  const key = `${day}-${i}`;
+  if(restTimers[key]){ clearInterval(restTimers[key]); delete restTimers[key]; }
+  const panel = document.getElementById(`rest-${day}-${i}`);
+  if(panel) panel.classList.remove('show');
+}
+
+// autospeak toggle
+const autoSwitch = document.getElementById('autoSpeakSwitch');
+autoSwitch.onclick = ()=>{
+  autoSpeak = !autoSpeak;
+  autoSwitch.classList.toggle('on', autoSpeak);
+  saveSettings();
+};
+
+// persistence
+async function saveProgress(){
+  try{
+    await window.storage.set('workout-progress', JSON.stringify(progress), false);
+  }catch(e){ /* storage unavailable, continue silently */ }
+}
+async function loadProgress(){
+  try{
+    const res = await window.storage.get('workout-progress', false);
+    if(res && res.value) progress = JSON.parse(res.value);
+  }catch(e){ /* no saved progress yet */ }
+}
+async function saveSettings(){
+  try{
+    await window.storage.set('workout-settings', JSON.stringify({autoSpeak}), false);
+  }catch(e){}
+}
+async function loadSettings(){
+  try{
+    const res = await window.storage.get('workout-settings', false);
+    if(res && res.value){
+      const s = JSON.parse(res.value);
+      autoSpeak = !!s.autoSpeak;
+      autoSwitch.classList.toggle('on', autoSpeak);
+    }
+  }catch(e){}
+}
+async function saveCustomInstr(){
+  try{
+    await window.storage.set('workout-custom-instructions', JSON.stringify(customInstr), false);
+  }catch(e){}
+}
+async function loadCustomInstr(){
+  try{
+    const res = await window.storage.get('workout-custom-instructions', false);
+    if(res && res.value) customInstr = JSON.parse(res.value);
+  }catch(e){}
+}
+
+(async function init(){
+  await loadProgress();
+  await loadSettings();
+  await loadCustomInstr();
+  await loadVideosFromIDB();
+  render();
+  // warm up voices list (some browsers load async)
+  window.speechSynthesis.onvoiceschanged = ()=>{};
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* not served over http(s), ignore */ });
+  }
+})();
+</script>
+</body>
+</html>
