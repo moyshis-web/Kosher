@@ -813,21 +813,43 @@ async function deletePlan(planId){
 }
 
 /* ============ Persistence ============ */
-async function saveProgress(){ try{ await window.storage.set('workout-progress-v2', JSON.stringify(progress), false); }catch(e){} }
-async function loadProgress(){ try{ const r = await window.storage.get('workout-progress-v2', false); if(r && r.value) progress = JSON.parse(r.value); }catch(e){} }
-async function saveSettings(){ try{ await window.storage.set('workout-settings', JSON.stringify({autoSpeak}), false); }catch(e){} }
-async function loadSettings(){
+/* ============ Storage abstraction ============ */
+/* window.storage only exists inside Claude.ai's artifact preview.
+   When this app is hosted on a real site (e.g. GitHub Pages) and opened
+   on the phone, we fall back to the browser's own localStorage instead. */
+async function storageSet(key, value){
   try{
-    const r = await window.storage.get('workout-settings', false);
-    if(r && r.value){ autoSpeak = !!JSON.parse(r.value).autoSpeak; autoSwitch.classList.toggle('on', autoSpeak); }
-  }catch(e){}
+    if(window.storage && typeof window.storage.set === 'function'){
+      await window.storage.set(key, value, false);
+    } else {
+      localStorage.setItem(key, value);
+    }
+  }catch(e){ /* storage unavailable */ }
 }
-async function saveCustomInstr(){ try{ await window.storage.set('workout-custom-instructions', JSON.stringify(customInstr), false); }catch(e){} }
-async function loadCustomInstr(){ try{ const r = await window.storage.get('workout-custom-instructions', false); if(r && r.value) customInstr = JSON.parse(r.value); }catch(e){} }
-async function saveCustomLibrary(){ try{ await window.storage.set('workout-custom-library', JSON.stringify(customLibrary), false); }catch(e){} }
-async function loadCustomLibrary(){ try{ const r = await window.storage.get('workout-custom-library', false); if(r && r.value) customLibrary = JSON.parse(r.value); }catch(e){} }
-async function saveCustomPlans(){ try{ await window.storage.set('workout-custom-plans', JSON.stringify(customPlans), false); }catch(e){} }
-async function loadCustomPlans(){ try{ const r = await window.storage.get('workout-custom-plans', false); if(r && r.value) customPlans = JSON.parse(r.value); }catch(e){} }
+async function storageGet(key){
+  try{
+    if(window.storage && typeof window.storage.get === 'function'){
+      const r = await window.storage.get(key, false);
+      return r ? r.value : null;
+    } else {
+      return localStorage.getItem(key);
+    }
+  }catch(e){ return null; }
+}
+
+async function saveProgress(){ const v = JSON.stringify(progress); await storageSet('workout-progress-v2', v); }
+async function loadProgress(){ const v = await storageGet('workout-progress-v2'); if(v) progress = JSON.parse(v); }
+async function saveSettings(){ await storageSet('workout-settings', JSON.stringify({autoSpeak})); }
+async function loadSettings(){
+  const v = await storageGet('workout-settings');
+  if(v){ autoSpeak = !!JSON.parse(v).autoSpeak; autoSwitch.classList.toggle('on', autoSpeak); }
+}
+async function saveCustomInstr(){ await storageSet('workout-custom-instructions', JSON.stringify(customInstr)); }
+async function loadCustomInstr(){ const v = await storageGet('workout-custom-instructions'); if(v) customInstr = JSON.parse(v); }
+async function saveCustomLibrary(){ await storageSet('workout-custom-library', JSON.stringify(customLibrary)); }
+async function loadCustomLibrary(){ const v = await storageGet('workout-custom-library'); if(v) customLibrary = JSON.parse(v); }
+async function saveCustomPlans(){ await storageSet('workout-custom-plans', JSON.stringify(customPlans)); }
+async function loadCustomPlans(){ const v = await storageGet('workout-custom-plans'); if(v) customPlans = JSON.parse(v); }
 
 const autoSwitch = document.getElementById('autoSpeakSwitch');
 autoSwitch.onclick = ()=>{ autoSpeak = !autoSpeak; autoSwitch.classList.toggle('on', autoSpeak); saveSettings(); };
